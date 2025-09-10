@@ -7,8 +7,16 @@
         We stemmen de volledige reis op jouw wensen af.
       </p>
 
-      <div class="planner-container">
-        <div class="planner-steps">
+        <div class="planner-container" @click="handlePlannerClick">
+          <div class="scroll-lock-indicator" v-if="isScrollLocked">
+            <i class="fas fa-lock"></i>
+            <span>Scrolling vergrendeld - Druk ESC of klik buiten om te ontgrendelen</span>
+          </div>
+          <div class="scroll-hint" v-if="plannerFullyVisible && !isScrollLocked">
+            <i class="fas fa-mouse-pointer"></i>
+            <span>Klik hier om scrolling te vergrendelen tijdens het invullen</span>
+          </div>
+          <div class="planner-steps">
           <div class="step" :class="{ active: currentStep >= 1, completed: currentStep > 1 }">
             <div class="step-number">1</div>
             <div class="step-title">Destinations</div>
@@ -63,7 +71,7 @@
             <h3>Met wie ga jij op pad?</h3>
             <div class="preferences-grid">
               <div class="preference-group">
-                  <label>Type reiziger</label>
+                <label>Type reiziger</label>
                 <div class="duration-options">
                   <div 
                     v-for="duration in durationOptions" 
@@ -74,6 +82,60 @@
                   >
                     <i :class="duration.icon"></i>
                     <span>{{ duration.label }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preference-group">
+                <label>Uit wat voor type personen bestaat jouw groep?</label>
+                <div class="group-composition-grid">
+                  <div 
+                    v-for="groupType in groupComposition" 
+                    :key="groupType.id"
+                    class="composition-card"
+                    :class="{ selected: travelPlan.groupComposition.includes(groupType.id) }"
+                    @click="toggleGroupComposition(groupType.id)"
+                  >
+                    <i :class="groupType.icon"></i>
+                    <span>{{ groupType.name }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preference-group">
+                <label>Hoe snel wil jij reizen?</label>
+                <div class="travel-pace-options">
+                  <div 
+                    v-for="pace in travelPace" 
+                    :key="pace.value"
+                    class="pace-card"
+                    :class="{ selected: travelPlan.travelPace === pace.value }"
+                    @click="travelPlan.travelPace = pace.value"
+                  >
+                    <i :class="pace.icon"></i>
+                    <div class="pace-info">
+                      <span class="pace-name">{{ pace.name }}</span>
+                      <span class="pace-desc">{{ pace.description }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="preference-group">
+                <label>Wil je een touristisch gebied of juist niet?</label>
+                <div class="tourism-preference">
+                  <div 
+                    v-for="tourism in tourismTypes" 
+                    :key="tourism.value"
+                    class="tourism-card"
+                    :class="{ selected: travelPlan.tourismPreference === tourism.value }"
+                    @click="travelPlan.tourismPreference = tourism.value"
+                  >
+                    <i :class="tourism.icon"></i>
+                    <div class="tourism-info">
+                      <span class="tourism-name">{{ tourism.name }}</span>
+                      <span class="tourism-desc">{{ tourism.description }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -159,9 +221,46 @@
                 </div>
               </div>
 
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Welk type accommodatie spreekt je aan?</label>
+                  <select v-model="travelPlan.accommodationType">
+                    <option value="">Kies een optie...</option>
+                    <option v-for="acc in accommodationTypes" :key="acc.id" :value="acc.id">
+                      {{ acc.name }}
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Wat is jouw fysieke niveau?</label>
+                  <select v-model="travelPlan.physicalLevel">
+                    <option value="">Kies een niveau...</option>
+                    <option v-for="level in physicalLevels" :key="level.id" :value="level.id">
+                      {{ level.name }} - {{ level.description }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
               <div class="form-group">
-                <label>Special Requests or Interests</label>
-                <textarea v-model="travelPlan.notes" placeholder="Tell us about any special interests, dietary requirements, or specific experiences you're looking for..."></textarea>
+                <label>Eetvoorkeuren</label>
+                <div class="food-preferences">
+                  <div 
+                    v-for="food in foodPreferences" 
+                    :key="food.id"
+                    class="food-card"
+                    :class="{ selected: travelPlan.foodPreference === food.id }"
+                    @click="travelPlan.foodPreference = food.id"
+                  >
+                    <i :class="food.icon"></i>
+                    <span>{{ food.name }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Speciale wensen of interesses</label>
+                <textarea v-model="travelPlan.notes" placeholder="Vertel ons over specifieke interesses, medische behoeften, of unieke ervaringen die je zoekt..."></textarea>
               </div>
             </div>
 
@@ -236,11 +335,20 @@ export default {
   data() {
     return {
       currentStep: 1,
+      isScrollLocked: false,
+      plannerFullyVisible: false,
+      scrollPosition: 0,
       travelPlan: {
         destinations: [],
         duration: '',
         budgetIndex: 2,
         activities: [],
+        groupComposition: [],
+        travelPace: '',
+        tourismPreference: '',
+        accommodationType: '',
+        foodPreference: '',
+        physicalLevel: '',
         name: '',
         email: '',
         dates: '',
@@ -319,8 +427,80 @@ export default {
         { id: 'adventure', name: 'Avontuur & Sport', icon: 'fas fa-mountain' },
         { id: 'conservation', name: 'Natuurbehoud', icon: 'fas fa-leaf' },
         { id: 'luxury', name: 'Luxe accommodaties', icon: 'fas fa-gem' }
+      ],
+      groupComposition: [
+        { id: 'young-adults', name: 'Jongvolwassenen', icon: 'fas fa-users' },
+        { id: 'families-kids', name: 'Gezinnen met kinderen', icon: 'fas fa-child' },
+        { id: 'couples', name: 'Stellen', icon: 'fas fa-heart' },
+        { id: 'seniors', name: '50+ reizigers', icon: 'fas fa-user-check' },
+        { id: 'adventure-seekers', name: 'Avonturiers', icon: 'fas fa-mountain' },
+        { id: 'culture-lovers', name: 'Cultuurliefhebbers', icon: 'fas fa-museum' }
+      ],
+      travelPace: [
+        { 
+          value: 'slow', 
+          name: 'Rustig aan', 
+          description: 'Tijd nemen voor elke bestemming', 
+          icon: 'fas fa-leaf' 
+        },
+        { 
+          value: 'moderate', 
+          name: 'Gemiddeld tempo', 
+          description: 'Balans tussen ontspanning en ontdekking', 
+          icon: 'fas fa-walking' 
+        },
+        { 
+          value: 'active', 
+          name: 'Actief tempo', 
+          description: 'Veel zien en doen in korte tijd', 
+          icon: 'fas fa-running' 
+        }
+      ],
+      tourismTypes: [
+        { 
+          value: 'off-beaten', 
+          name: 'Off the beaten track', 
+          description: 'Onontdekte plekken, weg van toeristen', 
+          icon: 'fas fa-compass' 
+        },
+        { 
+          value: 'mixed', 
+          name: 'Combinatie', 
+          description: 'Mix van bekende en verborgen parels', 
+          icon: 'fas fa-balance-scale' 
+        },
+        { 
+          value: 'popular', 
+          name: 'Populaire bestemmingen', 
+          description: 'Bekende highlights en must-sees', 
+          icon: 'fas fa-star' 
+        }
+      ],
+      accommodationTypes: [
+        { id: 'camping', name: 'Kamperen & glamping', icon: 'fas fa-campground' },
+        { id: 'guesthouse', name: 'Lokale guesthouses', icon: 'fas fa-home' },
+        { id: 'mid-range', name: 'Comfort hotels', icon: 'fas fa-bed' },
+        { id: 'luxury', name: 'Luxury lodges', icon: 'fas fa-crown' }
+      ],
+      foodPreferences: [
+        { id: 'local', name: 'Lokale keuken', icon: 'fas fa-utensils' },
+        { id: 'international', name: 'Internationale keuken', icon: 'fas fa-globe' },
+        { id: 'vegetarian', name: 'Vegetarisch/Vegan', icon: 'fas fa-seedling' },
+        { id: 'dietary', name: 'Speciale dieetwensen', icon: 'fas fa-apple-alt' }
+      ],
+      physicalLevels: [
+        { id: 'low', name: 'Ontspannen', description: 'Minimale fysieke inspanning', icon: 'fas fa-couch' },
+        { id: 'moderate', name: 'Gemiddeld', description: 'Wat wandelen en lichte activiteiten', icon: 'fas fa-walking' },
+        { id: 'active', name: 'Actief', description: 'Veel wandelen en sport activiteiten', icon: 'fas fa-hiking' },
+        { id: 'extreme', name: 'Uitdagend', description: 'Intensieve fysieke activiteiten', icon: 'fas fa-mountain' }
       ]
     }
+  },
+  mounted() {
+    this.initializeScrollLock();
+  },
+  beforeUnmount() {
+    this.disableScrollLock();
   },
   watch: {
     currentStep() {
@@ -353,6 +533,12 @@ export default {
         duration: '',
         budgetIndex: 2,
         activities: [],
+        groupComposition: [],
+        travelPace: '',
+        tourismPreference: '',
+        accommodationType: '',
+        foodPreference: '',
+        physicalLevel: '',
         name: '',
         email: '',
         dates: '',
@@ -376,6 +562,14 @@ export default {
         this.travelPlan.activities.push(activityId);
       }
     },
+    toggleGroupComposition(groupId) {
+      const index = this.travelPlan.groupComposition.indexOf(groupId);
+      if (index > -1) {
+        this.travelPlan.groupComposition.splice(index, 1);
+      } else {
+        this.travelPlan.groupComposition.push(groupId);
+      }
+    },
     getDestination(id) {
       return this.destinations.find(dest => dest.id === id);
     },
@@ -394,6 +588,140 @@ export default {
     },
     contactExpert() {
       alert('Our travel expert will contact you within 24 hours to discuss your African adventure!');
+    },
+    initializeScrollLock() {
+      // Create intersection observer to detect when travel planner is FULLY in view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const plannerContainer = entry.target.querySelector('.planner-container');
+          if (entry.isIntersecting && plannerContainer) {
+            // Check if the planner container is fully visible
+            const containerRect = plannerContainer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            
+            // Only lock if the entire container fits in the viewport with some margin
+            const isFullyVisible = containerRect.top >= 50 && containerRect.bottom <= windowHeight - 50;
+            
+            if (isFullyVisible) {
+              // Only auto-lock when clicking in the planner, not just when scrolling to it
+              this.plannerFullyVisible = true;
+            } else {
+              this.plannerFullyVisible = false;
+              this.disableScrollLock();
+            }
+          } else {
+            // User has scrolled away from travel planner - always unlock
+            this.plannerFullyVisible = false;
+            this.disableScrollLock();
+          }
+        });
+      }, { 
+        threshold: 0.95, // Trigger when 95% of the section is visible
+        rootMargin: '-50px 0px -50px 0px' // Require some margin from viewport edges
+      });
+
+      // Observe the travel planner section
+      const plannerSection = document.getElementById('travel-planner');
+      if (plannerSection) {
+        observer.observe(plannerSection);
+      }
+
+      // Listen for clicks within the planner to enable scroll lock (only when fully visible)
+      const plannerContainer = document.querySelector('.planner-container');
+      if (plannerContainer) {
+        plannerContainer.addEventListener('click', (e) => {
+          if (this.plannerFullyVisible) {
+            this.enableScrollLock();
+          }
+        });
+      }
+
+      // Listen for clicks outside the planner to disable scroll lock
+      document.addEventListener('click', (e) => {
+        const plannerSection = document.getElementById('travel-planner');
+        if (plannerSection && !plannerSection.contains(e.target)) {
+          this.disableScrollLock();
+        }
+      });
+
+      // Listen for escape key to disable scroll lock
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.disableScrollLock();
+        }
+      });
+
+      // Listen for scroll events to allow scrolling past the planner
+      let scrollTimeout;
+      window.addEventListener('scroll', () => {
+        if (this.isScrollLocked) {
+          // Clear timeout to debounce scroll events
+          clearTimeout(scrollTimeout);
+          
+          // Set a timeout to check if user is trying to scroll past
+          scrollTimeout = setTimeout(() => {
+            const plannerSection = document.getElementById('travel-planner');
+            if (plannerSection) {
+              const rect = plannerSection.getBoundingClientRect();
+              const windowHeight = window.innerHeight;
+              
+              // If planner is no longer in view or user scrolled significantly past it, unlock
+              if (rect.bottom < 0 || rect.top > windowHeight) {
+                this.disableScrollLock();
+              }
+            }
+          }, 100);
+        }
+      });
+    },
+    enableScrollLock() {
+      if (!this.isScrollLocked) {
+        // Store current scroll position
+        this.scrollPosition = window.pageYOffset;
+        
+        // Prevent body scrolling
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${this.scrollPosition}px`;
+        document.body.style.width = '100%';
+        
+        // Add a class to indicate scroll is locked
+        document.body.classList.add('scroll-locked');
+        
+        // Update component state
+        this.isScrollLocked = true;
+        
+        // Ensure the planner content is scrollable
+        const plannerContent = document.querySelector('.planner-content');
+        if (plannerContent) {
+          plannerContent.style.overflowY = 'auto';
+        }
+      }
+    },
+    disableScrollLock() {
+      if (this.isScrollLocked) {
+        // Re-enable body scrolling
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        
+        // Restore scroll position
+        window.scrollTo(0, this.scrollPosition || 0);
+        
+        // Remove the scroll lock class
+        document.body.classList.remove('scroll-locked');
+        
+        // Update component state
+        this.isScrollLocked = false;
+      }
+    },
+    handlePlannerClick() {
+      if (this.plannerFullyVisible) {
+        this.enableScrollLock();
+      }
     }
   }
 }
