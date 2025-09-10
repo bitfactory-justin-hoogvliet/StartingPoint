@@ -613,6 +613,14 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .travel-types {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .activities-grid {
     grid-template-columns: repeat(2, 1fr);
     max-width: 400px;
@@ -750,6 +758,23 @@ body {
   .activity-list {
     grid-template-columns: 1fr;
   }
+
+  .travel-types {
+    grid-template-columns: 1fr;
+    max-width: 300px;
+  }
+
+  .cta-section h3 {
+    font-size: 2rem;
+  }
+
+  .testimonial-card {
+    padding: 1.5rem;
+  }
+
+  .travel-type-card {
+    padding: 1.5rem 1rem;
+  }
 }
 
 /* Smooth scroll behavior */
@@ -800,6 +825,9 @@ html {
   overflow: hidden;
   border: 1px solid var(--border-warm);
   box-shadow: var(--shadow-warm);
+  max-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
 }
 
 .planner-steps {
@@ -871,8 +899,10 @@ html {
 }
 
 .planner-content {
-  padding: 3rem;
-  min-height: 500px;
+  padding: 2rem;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 350px);
 }
 
 .planner-step {
@@ -887,9 +917,9 @@ html {
 }
 
 .planner-step h3 {
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--text-light);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   text-align: center;
   font-weight: 600;
 }
@@ -897,9 +927,9 @@ html {
 /* Destination Selector */
 .destination-selector {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .destination-option {
@@ -966,8 +996,8 @@ html {
 /* Preferences Grid */
 .preferences-grid {
   display: grid;
-  gap: 3rem;
-  margin-bottom: 3rem;
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
 .preference-group {
@@ -1128,7 +1158,7 @@ html {
 /* Form Elements */
 .details-form {
   max-width: 600px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 2rem;
 }
 
 .details-form .form-row {
@@ -1442,4 +1472,164 @@ html {
 
 .experience-item:nth-child(odd).animate-in {
   animation: slideInRight 0.8s ease forwards;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 6rem 0;
+  background: var(--background-warm);
+  color: var(--text-dark);
+}
+
+.testimonials-section .section-title {
+  color: var(--text-warm);
+}
+
+.testimonials-section .section-intro {
+  color: var(--text-dark);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin: 4rem 0;
+}
+
+.testimonial-card {
+  background: var(--text-light);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(139, 69, 19, 0.1);
+  border: 2px solid transparent;
+  transition: var(--transition);
+  position: relative;
+}
+
+.testimonial-card::before {
+  content: '"';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  font-size: 4rem;
+  color: var(--accent-color);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.testimonial-card:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-warm);
+}
+
+.testimonial-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.testimonial-details {
+  border-top: 1px solid rgba(139, 69, 19, 0.1);
+  padding-top: 1rem;
+}
+
+.testimonial-author {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.testimonial-trip {
+  background: var(--accent-color);
+  color: var(--text-light);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.testimonial-destinations {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+.cta-section {
+  margin-top: 6rem;
+  text-align: center;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-section h3 {
+  font-size: 2.5rem;
+  color: var(--text-warm);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.cta-section p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-dark);
+  margin-bottom: 3rem;
+}
+
+.travel-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.travel-type-card {
+  background: var(--text-light);
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(139, 69, 19, 0.1);
+  border: 2px solid transparent;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.travel-type-card:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-warm);
+}
+
+.travel-type-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  transition: var(--transition);
+}
+
+.travel-type-card:hover .travel-type-icon {
+  background: var(--accent-color);
+}
+
+.travel-type-icon i {
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+.travel-type-card h4 {
+  font-size: 1.1rem;
+  color: var(--text-warm);
+  font-weight: 600;
 }
